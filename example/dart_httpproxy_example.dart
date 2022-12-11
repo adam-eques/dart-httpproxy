@@ -1,14 +1,28 @@
 import 'dart:ffi' as ffi;
-import 'dart:io' show Platform, Directory;
 import 'package:ffi/ffi.dart';
 import 'package:path/path.dart' as path;
+import "dart:io";
 
+// Run
 typedef RunProxyFunc = ffi.Void Function(
     ffi.Int port, ffi.Pointer<Utf8> user, ffi.Pointer<Utf8> pass);
 typedef RunProxy = void Function(
     int port, ffi.Pointer<Utf8> user, ffi.Pointer<Utf8> pass);
+// Stop
+typedef StopProxyFunc = ffi.Void Function();
+typedef StopProxy = void Function();
 
-void main() {
+void main() async {
+  proxyRun();
+  print("proxy was run");
+
+  ProcessSignal.sigint.watch().listen((event) {
+    proxyClose();
+    exit(0);
+  });
+}
+
+Future<void> proxyRun() async {
   // Open the dynamic library
   var libraryPath =
       path.join(Directory.current.path, 'proxy_library', 'libproxy.so');
@@ -32,5 +46,17 @@ void main() {
   final port = 8080;
   final user = "test";
   final pass = "1234";
+
   runProxy(port, user.toNativeUtf8(), pass.toNativeUtf8());
+}
+
+void proxyClose() {
+  // Open the dynamic library
+  var libraryPath =
+      path.join(Directory.current.path, 'proxy_library', 'libproxy.so');
+  final dylib = ffi.DynamicLibrary.open(libraryPath);
+  // Look up the C function 'hello_world'
+  final StopProxy closeProxy =
+      dylib.lookup<ffi.NativeFunction<StopProxyFunc>>('StopProxy').asFunction();
+  closeProxy();
 }
