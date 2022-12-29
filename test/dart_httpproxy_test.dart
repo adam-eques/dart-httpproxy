@@ -1,4 +1,4 @@
-import 'package:dart_httpproxy/dart_httpproxy.dart';
+import 'package:dart_httpproxy/main.dart';
 import 'package:test/test.dart';
 
 void main() {
