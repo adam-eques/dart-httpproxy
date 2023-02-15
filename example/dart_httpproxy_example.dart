@@ -36,6 +36,8 @@ void main() async {
       switch (msg.type) {
         case WsStatus.proxyClose:
           print("proxyClose");
+          proxyClose();
+          exit(-1);
           break;
         case WsStatus.proxyStart:
           print("ProxyStart");
@@ -50,9 +52,13 @@ void main() async {
     },
     onDone: () {
       print("websocket was closed");
+      proxyClose();
+      exit(-1);
     },
     onError: (err) {
       print(err);
+      proxyClose();
+      exit(-1);
     },
   );
   String content = ProxyConfig(port, username, proxyKey).toJson();
